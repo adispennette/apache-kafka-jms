@@ -2,12 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<!-- <parent> <groupId>com.monitise.mvp.cloud.messaging</groupId> <artifactId>mvp-cloud-utilities</artifactId> 
-		<version>1.0.0-SNAPSHOT</version> <relativePath>../pom.xml</relativePath> 
-		</parent> -->
 	<groupId>org.apache.kafka</groupId>
 	<artifactId>kafka-clients-jms</artifactId>
-	<version>0.8.2.2</version>
+	<version>0.8.2.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>MVP Cloud Messaging Kafka to JMS</name>
 	<description>MVP Cloud Messaging Kafka to JMS</description>
