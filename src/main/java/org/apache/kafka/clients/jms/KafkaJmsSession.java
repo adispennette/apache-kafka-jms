@@ -57,7 +57,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public BytesMessage createBytesMessage() throws JMSException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
@@ -120,8 +120,9 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public TextMessage createTextMessage(String text) throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		KafkaTextMessage msg = new KafkaTextMessage();
+		msg.setText(text);
+		return msg;
 	}
 
 	/* (non-Javadoc)

@@ -16,17 +16,20 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import javax.jms.JMSException;
-import javax.jms.TextMessage;
+import javax.jms.ObjectMessage;
 
 /**
  * @author Al Dispennette
  * @since 0.8.2.2
  *
  */
-public class KafkaTextMessage extends KafkaMessage implements TextMessage{
-	private String payload;
+public class KafkaObjectMessage extends KafkaMessage implements ObjectMessage{
+	private Object payload;
 	
-	public KafkaTextMessage() {
+	/**
+	 * 
+	 */
+	public KafkaObjectMessage() {
 		headers = new HashMap<>();
 		headers.put(PROPERTIES, new HashMap<String,Serializable>());
 	}
@@ -36,7 +39,8 @@ public class KafkaTextMessage extends KafkaMessage implements TextMessage{
 	 */
 	@Override
 	public void clearBody() throws JMSException {
-		payload = null;
+		// TODO Auto-generated method stub
+		
 	}
 
 	/* (non-Javadoc)
@@ -44,23 +48,26 @@ public class KafkaTextMessage extends KafkaMessage implements TextMessage{
 	 */
 	@Override
 	public <T> T getBody(Class<T> c) throws JMSException {
-		return (T) payload;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.jms.TextMessage#setText(java.lang.String)
+	 * @see javax.jms.ObjectMessage#setObject(java.io.Serializable)
 	 */
 	@Override
-	public void setText(String string) throws JMSException {
-		payload = string;
+	public void setObject(Serializable object) throws JMSException {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.jms.TextMessage#getText()
+	 * @see javax.jms.ObjectMessage#getObject()
 	 */
 	@Override
-	public String getText() throws JMSException {
-		return payload;
+	public Serializable getObject() throws JMSException {
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
+
 }
