@@ -49,7 +49,10 @@ public class KafkaMessageConsumer implements MessageConsumer {
 		consumer = new KafkaConsumer<String, Message>(config);
 		this.destination = (KafkaDestination) destination;
 		consumer.subscribe(Arrays.asList(this.destination.getName()));
+<<<<<<< HEAD
 		//consumer.subscribe(new TopicPartition(this.destination.getName(),1));
+=======
+>>>>>>> started basic consumer
 	}
 
 	/* (non-Javadoc)
@@ -83,12 +86,15 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	 */
 	@Override
 	public Message receive() throws JMSException {
+<<<<<<< HEAD
 
+=======
+>>>>>>> started basic consumer
 		ConsumerRecords<String, Message> records = null;
 		while(null == records) {
 			records = consumer.poll(0);
 		}
-		return null;
+		return process(records).get(0);
 	}
 
 	/* (non-Javadoc)

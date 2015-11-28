@@ -52,11 +52,6 @@ public class KafkaJmsConnectionFactoryTest {
 		session = con.createSession();
 		topic = session.createTopic("test");
 	}
-	
-	@After
-	public void end() throws JMSException{
-		//con.close();
-	}
 
 	@Test
 	public void testSend() throws JMSException {
@@ -66,6 +61,7 @@ public class KafkaJmsConnectionFactoryTest {
 		text.setText("this is a test.");
 		
 		producer.send(text);
+		producer.close();
 	}
 	
 	@Test
@@ -76,6 +72,8 @@ public class KafkaJmsConnectionFactoryTest {
 		Assert.assertNotNull(msg);
 		Assert.assertEquals("this is a test.", msg.getBody(String.class));
 		
+		session.unsubscribe(((KafkaDestination)topic).getName());
+		consumer.close();
 	}
 
 }
