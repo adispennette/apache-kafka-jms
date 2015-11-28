@@ -34,8 +34,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
-
 /**
  * @author Al Dispennette
  * @since 0.8.2.2
@@ -44,6 +42,9 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 public class KafkaJmsSession implements Session{
 	private Properties config;
 	private KafkaMessageProducer producer;
+	private KafkaMessageConsumer consumer;
+	
+	private MessageListener listener;
 
 	/**
 	 * @param config
@@ -57,8 +58,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public BytesMessage createBytesMessage() throws JMSException {
-		
-		return null;
+		return new KafkaBytesMessage();
 	}
 
 	/* (non-Javadoc)
@@ -66,8 +66,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public MapMessage createMapMessage() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return new KafkaMapMessage();
 	}
 
 	/* (non-Javadoc)
@@ -75,8 +74,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public Message createMessage() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return createObjectMessage();
 	}
 
 	/* (non-Javadoc)
@@ -84,8 +82,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public ObjectMessage createObjectMessage() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return new KafkaObjectMessage();
 	}
 
 	/* (non-Javadoc)
@@ -94,8 +91,9 @@ public class KafkaJmsSession implements Session{
 	@Override
 	public ObjectMessage createObjectMessage(Serializable object)
 			throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		KafkaObjectMessage msg = new KafkaObjectMessage();
+		msg.setObject(object);
+		return msg;
 	}
 
 	/* (non-Javadoc)
@@ -103,8 +101,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public StreamMessage createStreamMessage() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return new KafkaStreamMessage();
 	}
 
 	/* (non-Javadoc)
@@ -139,7 +136,6 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public int getAcknowledgeMode() throws JMSException {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
@@ -183,8 +179,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public MessageListener getMessageListener() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return listener;
 	}
 
 	/* (non-Javadoc)
@@ -193,8 +188,7 @@ public class KafkaJmsSession implements Session{
 	@Override
 	public void setMessageListener(MessageListener listener)
 			throws JMSException {
-		// TODO Auto-generated method stub
-		
+		this.listener = listener;
 	}
 
 	/* (non-Javadoc)
@@ -222,8 +216,8 @@ public class KafkaJmsSession implements Session{
 	@Override
 	public MessageConsumer createConsumer(Destination destination)
 			throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		consumer = new KafkaMessageConsumer(config, destination);
+		return consumer;
 	}
 
 	/* (non-Javadoc)
@@ -232,8 +226,7 @@ public class KafkaJmsSession implements Session{
 	@Override
 	public MessageConsumer createConsumer(Destination destination,
 			String messageSelector) throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return createConsumer(destination);
 	}
 
 	/* (non-Javadoc)
@@ -242,8 +235,7 @@ public class KafkaJmsSession implements Session{
 	@Override
 	public MessageConsumer createConsumer(Destination destination,
 			String messageSelector, boolean noLocal) throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return createConsumer(destination);
 	}
 
 	/* (non-Javadoc)
@@ -348,8 +340,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public QueueBrowser createBrowser(Queue queue) throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Browsing is not supported for Kafka");
 	}
 
 	/* (non-Javadoc)
@@ -358,8 +349,7 @@ public class KafkaJmsSession implements Session{
 	@Override
 	public QueueBrowser createBrowser(Queue queue, String messageSelector)
 			throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Browsing is not supported for Kafka");
 	}
 
 	/* (non-Javadoc)
@@ -367,8 +357,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public TemporaryQueue createTemporaryQueue() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Temporary queues are not supported for Kafka");
 	}
 
 	/* (non-Javadoc)
@@ -376,8 +365,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public TemporaryTopic createTemporaryTopic() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Temporary topics are not supported for Kafka");
 	}
 
 	/* (non-Javadoc)
@@ -385,8 +373,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public void unsubscribe(String name) throws JMSException {
-		// TODO Auto-generated method stub
-		
+		consumer.unsubscribe();
 	}
 
 }

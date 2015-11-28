@@ -12,7 +12,9 @@
  */
 package org.apache.kafka.clients.jms;
 
+import java.io.Serializable;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
@@ -26,6 +28,10 @@ import javax.jms.JMSException;
 public class KafkaBytesMessage extends KafkaMessage implements BytesMessage {
 	private byte[] payload;
 	
+	public KafkaBytesMessage() {
+		headers = new HashMap<>();
+		headers.put(PROPERTIES, new HashMap<String,Serializable>());
+	}
 	/* (non-Javadoc)
 	 * @see javax.jms.Message#clearBody()
 	 */
