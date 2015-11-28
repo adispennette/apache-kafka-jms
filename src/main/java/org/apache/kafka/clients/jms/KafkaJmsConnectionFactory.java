@@ -32,7 +32,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 public class KafkaJmsConnectionFactory implements ConnectionFactory {
 	private static final String DEFAULT_AUTO_COMMIT_INTERVAL = "10000";
 	private static final String DEFAULT_ASSIGNMENT_STRATEGY = "range";
-	private static final String DEFAULT_AUTO_COMMIT = "true";
+	private static final String DEFAULT_AUTO_COMMIT = "false";
 	private static final String DEFAULT_TIMOUT = "1000";
 	private static String DEFAULT_BROKER = "localhost:9092";
 	private static String DEFAULT_VALUE_SERIALIZER = ObjectSerializer.class.getName();

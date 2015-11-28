@@ -15,13 +15,13 @@ package org.apache.kafka.clients.jms;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-
-import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -30,6 +30,8 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 
 /**
  * @author Al Dispennette
@@ -39,7 +41,12 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 public class KafkaMessageConsumer implements MessageConsumer {
 	private Consumer<String, Message> consumer;
 	private KafkaDestination destination;
-	private MessageListener listener;
+	private MessageListener listener = new MessageListener() {
+		@Override
+		public void onMessage(Message message) {
+			// Denault noop listener
+		}
+	};
 	
 	/**
 	 * consumer config should define a group Id
@@ -49,10 +56,6 @@ public class KafkaMessageConsumer implements MessageConsumer {
 		consumer = new KafkaConsumer<String, Message>(config);
 		this.destination = (KafkaDestination) destination;
 		consumer.subscribe(Arrays.asList(this.destination.getName()));
-<<<<<<< HEAD
-		//consumer.subscribe(new TopicPartition(this.destination.getName(),1));
-=======
->>>>>>> started basic consumer
 	}
 
 	/* (non-Javadoc)
@@ -86,15 +89,12 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	 */
 	@Override
 	public Message receive() throws JMSException {
-<<<<<<< HEAD
-
-=======
->>>>>>> started basic consumer
+		subscribe();
 		ConsumerRecords<String, Message> records = null;
 		while(null == records) {
 			records = consumer.poll(0);
 		}
-		return process(records).get(0);
+		return process(records);
 	}
 
 	/* (non-Javadoc)
@@ -103,8 +103,9 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	@Override
 	public Message receive(long timeout) throws JMSException {
 		// Map<"topic name", ConsumerRecords<"trace_id", KafkaMessage>>
+		subscribe();
 		ConsumerRecords<String, Message> records = consumer.poll(timeout);
-		return process(records).get(0);
+		return process(records);
 	}
 
 	/* (non-Javadoc)
@@ -115,31 +116,30 @@ public class KafkaMessageConsumer implements MessageConsumer {
 		return receive(0);
 	}
 	
-	private List<Message> process(ConsumerRecords<String, Message> consumerRecords) throws JMSException{
+	//private List<Message> process(ConsumerRecords<String, Message> consumerRecords) throws JMSException{
+	private Message process(ConsumerRecords<String, Message> consumerRecords) throws JMSException{
 		List<Message> results = new ArrayList<Message>();
 		Iterable<ConsumerRecord<String, Message>> records = consumerRecords.records(destination.getName());
 		// user specific logic to process record
 		//processedOffsets.put(record.partition(), record.offset());
-		for(ConsumerRecord record:records){
-			results.add(getMessage(record));
+		//records.
+		for(ConsumerRecord<String,Message> record:records){
+			Message message = record.value();
+			listener.onMessage(message);
+			TopicPartition tp = new TopicPartition(record.topic(), record.partition());
+			OffsetAndMetadata oam = new OffsetAndMetadata(record.offset());
+			Map<TopicPartition,OffsetAndMetadata> map = new HashMap<TopicPartition, OffsetAndMetadata>();
+			map.put(tp, oam);
+			consumer.commitSync(map);
+			unsubscribe();
+			return message;
+			//results.add(message);
 		}
-		return results;
+		return null;
 	}
 	
 	public void commit(){
-		//consumer.commit(true);
-	}
-
-	/**
-	 * @param record
-	 * @return
-	 */
-	private Message getMessage(ConsumerRecord record) {
-		try {
-			return (Message) record.value();
-		} catch (Exception e) {
-			throw new JMSRuntimeException(e.getMessage());
-		}
+		// NOOP
 	}
 
 	/* (non-Javadoc)
@@ -147,6 +147,7 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	 */
 	@Override
 	public void close() throws JMSException {
+		unsubscribe();
 		consumer.close();
 	}
 	

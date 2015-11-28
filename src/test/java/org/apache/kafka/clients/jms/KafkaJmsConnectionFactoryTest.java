@@ -22,9 +22,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -55,6 +55,13 @@ public class KafkaJmsConnectionFactoryTest {
 
 	@Test
 	public void testSend() throws JMSException {
+		executeProducerTest();
+	}
+
+	/**
+	 * @throws JMSException
+	 */
+	private void executeProducerTest() throws JMSException {
 		MessageProducer producer = session.createProducer(topic);
 		
 		TextMessage text = session.createTextMessage();
@@ -64,10 +71,20 @@ public class KafkaJmsConnectionFactoryTest {
 		producer.close();
 	}
 	
+	//@Ignore
 	@Test
 	public void testReceive() throws JMSException {
+		executeProducerTest();
+		executeConsumerTest();
+		executeConsumerTest();
+	}
+
+	/**
+	 * @throws JMSException
+	 */
+	private void executeConsumerTest() throws JMSException {
 		MessageConsumer consumer = session.createConsumer(topic);
-		Message msg = consumer.receive(10000);
+		Message msg = consumer.receive(5000);
 		
 		Assert.assertNotNull(msg);
 		Assert.assertEquals("this is a test.", msg.getBody(String.class));
