@@ -12,13 +12,16 @@
  */
 package org.apache.kafka.clients.jms;
 
-import java.util.HashMap;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+
+import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -36,13 +39,17 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 public class KafkaMessageConsumer implements MessageConsumer {
 	private Consumer<String, Message> consumer;
 	private KafkaDestination destination;
+	private MessageListener listener;
 	
 	/**
 	 * consumer config should define a group Id
+	 * @throws JMSException 
 	 */
-	public KafkaMessageConsumer(Properties config, Destination destination) {
+	public KafkaMessageConsumer(Properties config, Destination destination) throws JMSException {
 		consumer = new KafkaConsumer<String, Message>(config);
-		this.destination = destination;
+		this.destination = (KafkaDestination) destination;
+		consumer.subscribe(Arrays.asList(this.destination.getName()));
+		//consumer.subscribe(new TopicPartition(this.destination.getName(),1));
 	}
 
 	/* (non-Javadoc)
@@ -59,8 +66,7 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	 */
 	@Override
 	public MessageListener getMessageListener() throws JMSException {
-		// TODO Auto-generated method stub
-		return null;
+		return listener;
 	}
 
 	/* (non-Javadoc)
@@ -69,8 +75,7 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	@Override
 	public void setMessageListener(MessageListener listener)
 			throws JMSException {
-		// TODO Auto-generated method stub
-
+		this.listener = listener;
 	}
 
 	/* (non-Javadoc)
@@ -78,7 +83,8 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	 */
 	@Override
 	public Message receive() throws JMSException {
-		Map<String, ConsumerRecords<String, Message>> records = null;
+
+		ConsumerRecords<String, Message> records = null;
 		while(null == records) {
 			records = consumer.poll(0);
 		}
@@ -91,8 +97,8 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	@Override
 	public Message receive(long timeout) throws JMSException {
 		// Map<"topic name", ConsumerRecords<"trace_id", KafkaMessage>>
-		Map<String, ConsumerRecords<String, Message>> records = consumer.poll(timeout);
-		return null;
+		ConsumerRecords<String, Message> records = consumer.poll(timeout);
+		return process(records).get(0);
 	}
 
 	/* (non-Javadoc)
@@ -103,14 +109,31 @@ public class KafkaMessageConsumer implements MessageConsumer {
 		return receive(0);
 	}
 	
-	private Map<Integer, Long> process(List<ConsumerRecord> records) throws Exception {
-		Map<Integer, Long> processedOffsets = new HashMap<Integer, Long>();
-		for (int i = 0; i < records.size(); i++) {
-			ConsumerRecord record = records.get(i);
-			// user specific logic to process record
-			processedOffsets.put(record.partition(), record.offset());
+	private List<Message> process(ConsumerRecords<String, Message> consumerRecords) throws JMSException{
+		List<Message> results = new ArrayList<Message>();
+		Iterable<ConsumerRecord<String, Message>> records = consumerRecords.records(destination.getName());
+		// user specific logic to process record
+		//processedOffsets.put(record.partition(), record.offset());
+		for(ConsumerRecord record:records){
+			results.add(getMessage(record));
 		}
-		return processedOffsets;
+		return results;
+	}
+	
+	public void commit(){
+		//consumer.commit(true);
+	}
+
+	/**
+	 * @param record
+	 * @return
+	 */
+	private Message getMessage(ConsumerRecord record) {
+		try {
+			return (Message) record.value();
+		} catch (Exception e) {
+			throw new JMSRuntimeException(e.getMessage());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -122,11 +145,11 @@ public class KafkaMessageConsumer implements MessageConsumer {
 	}
 	
 	void subscribe() throws JMSException{
-		consumer.subscribe(destination.getName());
+		consumer.subscribe(Arrays.asList(this.destination.getName()));
 	}
 	
 	void unsubscribe() throws JMSException{
-		consumer.unsubscribe(destination.getName());
+		consumer.unsubscribe();
 	}
 
 }

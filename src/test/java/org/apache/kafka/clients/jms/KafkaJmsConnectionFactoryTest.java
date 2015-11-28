@@ -16,11 +16,14 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.kafka.clients.jms.KafkaJmsConnectionFactory;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,6 +34,9 @@ import org.junit.Test;
  */
 public class KafkaJmsConnectionFactoryTest {
 	private ConnectionFactory factory;
+	private Connection con;
+	private Session session;
+	private Destination topic;
 
 	/**
 	 * @throws java.lang.Exception
@@ -39,21 +45,37 @@ public class KafkaJmsConnectionFactoryTest {
 	public void setUp() throws Exception {
 		factory = new KafkaJmsConnectionFactory();
 		((KafkaJmsConnectionFactory)factory).initializeConfig();
-		//((KafkaJmsConnectionFactory)factory).setValueSerializerClass(StringSerializer.class.getName());
+		((KafkaJmsConnectionFactory)factory).getBuilder().groupId("KafkaJmsConnectionFactoryTest")
+			.enableAuutoCommit("true").autoCommitInterval("1000");
+		
+		con = factory.createConnection();
+		session = con.createSession();
+		topic = session.createTopic("test");
+	}
+	
+	@After
+	public void end() throws JMSException{
+		//con.close();
 	}
 
 	@Test
-	public void test() throws JMSException {
-		Connection con = factory.createConnection();
-		Session session = con.createSession();
-		Destination topic = session.createTopic("test");
+	public void testSend() throws JMSException {
 		MessageProducer producer = session.createProducer(topic);
-		TextMessage msg = session.createTextMessage();
-		msg.setText("this is a test.");
 		
-		producer.send(msg);
+		TextMessage text = session.createTextMessage();
+		text.setText("this is a test.");
 		
-		con.close();
+		producer.send(text);
+	}
+	
+	@Test
+	public void testReceive() throws JMSException {
+		MessageConsumer consumer = session.createConsumer(topic);
+		Message msg = consumer.receive(10000);
+		
+		Assert.assertNotNull(msg);
+		Assert.assertEquals("this is a test.", msg.getBody(String.class));
+		
 	}
 
 }

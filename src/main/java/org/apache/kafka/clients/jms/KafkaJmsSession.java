@@ -144,8 +144,7 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public void commit() throws JMSException {
-		// TODO Auto-generated method stub
-		
+		consumer.commit();
 	}
 
 	/* (non-Javadoc)
@@ -162,7 +161,10 @@ public class KafkaJmsSession implements Session{
 	 */
 	@Override
 	public void close() throws JMSException {
-		producer.close();
+		try{
+			producer.close();
+			consumer.close();
+		}catch(Exception e){}
 	}
 
 	/* (non-Javadoc)
