@@ -3,7 +3,7 @@ jms implementation of apache kafka
 
 This is still a work in progress, however a basic functionality is working for a TextMessages as shown by this JUnit.
 
-public class KafkaJmsConnectionFactoryTest {
+    public class KafkaJmsConnectionFactoryTest {
 	private ConnectionFactory factory;
 	private Connection con;
 	private Session session;
@@ -47,5 +47,5 @@ public class KafkaJmsConnectionFactoryTest {
 		consumer.close();
 	}
 
-}
+    }
 
